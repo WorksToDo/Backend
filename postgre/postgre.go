@@ -7,6 +7,15 @@ import (
 	"todo-backend/config"
 )
 
+var DefaultConfig = config.DB{
+	Username: "postgres",
+	Password: "todo123",
+	Driver:   "postgres",
+	DBName:   "postgres",
+	Host:     "localhost",
+	Port:     "5432",
+}
+
 func NewPostgreDB(config config.DB) (*gorm.DB, error){
 	dsn := createDSN(config)
 	db,err := gorm.Open(postgres.Open(dsn))
