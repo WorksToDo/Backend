@@ -9,7 +9,7 @@ import (
 
 var DefaultConfig = config.DB{
 	Username: "postgres",
-	Password: "todo123",
+	Password: "assign1",
 	Driver:   "postgres",
 	DBName:   "postgres",
 	Host:     "localhost",

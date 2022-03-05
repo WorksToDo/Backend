@@ -1,0 +1,36 @@
+version: '3'
+services:
+  postgre-db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "assignment"
+      POSTGRES_PASSWORD: "assign1"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - todoNetwork
+  todo-api:
+    image: todo-backend:latest
+    environment:
+      SERVER_PORT: 4000
+      DB_HOST: postgre-db
+      DB_DRIVER: "postgres"
+      DB_USERNAME: "assignment"
+      DB_PASSWORD: "assign1"
+      DB_PORT: "5432"
+      DB_NAME: "postgres"
+      DB_TABLE_PREFIX: "todo."
+    ports:
+      - "5001:4000"
+    networks:
+      - todoNetwork
+    depends_on:
+      - postgre-db
+volumes:
+  postgres:
+
+networks:
+  todoNetwork:
