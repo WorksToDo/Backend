@@ -22,7 +22,6 @@ services:
       DB_PASSWORD: "assign1"
       DB_PORT: "5432"
       DB_NAME: "postgres"
-      DB_TABLE_PREFIX: "todo."
     ports:
       - "5001:4000"
     networks:

@@ -3,7 +3,9 @@ module todo-backend
 go 1.17
 
 require (
+	github.com/gofiber/fiber/v2 v2.28.0
 	github.com/golang/mock v1.6.0
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/stretchr/testify v1.7.0
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.1
@@ -12,7 +14,6 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gofiber/fiber/v2 v2.28.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.11.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

@@ -1,6 +1,8 @@
 package todo
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Todo struct {
 	ID int `json:"id" gorm:"primaryKey;column:id"`
@@ -11,6 +13,6 @@ func (Todo) TableName() string {
 	return fmt.Sprintf("%s.%s",SchemeName,TableName)
 }
 const(
-	SchemeName = "todos"
+	SchemeName = "public"
 	TableName = "todos"
 )
