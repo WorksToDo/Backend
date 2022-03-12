@@ -19,6 +19,7 @@ var DefaultConfig = config.DB{
 func NewPostgreDB(config config.DB) (*gorm.DB, error){
 	dsn := createDSN(config)
 	db,err := gorm.Open(postgres.Open(dsn))
+
 	if err != nil {
 		return nil, err
 	}
