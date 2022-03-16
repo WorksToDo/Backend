@@ -2,25 +2,24 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
 
 stages:
-#  - build
-#  - test
+  - build
+  - test
   - package
+build:
+  stage: build
+  image: golang:1.17.0-alpine3.14
+  before_script:
+    - go mod tidy -go=1.16 && go mod tidy -go=1.17
+  script:
+    - go build -o bin/main main.go
 
-#build:
-#  stage: build
-#  image: golang:1.17.0-alpine3.14
-#  before_script:
-#    - go mod tidy -go=1.16 && go mod tidy -go=1.17
-#  script:
-#    - go build -o bin/main main.go
-#
-#test:
-#  stage: test
-#  image: golang:1.17.0-alpine3.14
-#  before_script:
-#    - go mod tidy -go=1.16 && go mod tidy -go=1.17
-#  script:
-#    - go test -v
+test:
+  stage: test
+  image: golang:1.17.0-alpine3.14
+  before_script:
+    - go mod tidy -go=1.16 && go mod tidy -go=1.17
+  script:
+    - go test ./todo/ ./postgre/ ./server/ -v
 
 package:
   stage: package
@@ -28,7 +27,6 @@ package:
   services:
     - name: docker:18-dind
   variables:
-    DOCKERFILE_PATH: $CI_PROJECT_DIR/Dockerfile
     DOCKER_REGISTRY_NAME: $MY_CI_REGISTRY_NAME:$CI_PIPELINE_ID
   script:
     - docker login -u $MY_CI_DOCKER_USER --password $MY_CI_DOCKER_PASS
