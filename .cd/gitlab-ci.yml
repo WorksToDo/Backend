@@ -15,11 +15,13 @@ build:
 
 test:
   stage: test
-  image: golang:1.17.0-alpine3.14
+  image: golang:1.17
+  variables:
+    CI : $CI
   before_script:
     - go mod tidy -go=1.16 && go mod tidy -go=1.17
   script:
-    - go test ./todo/ ./postgre/ ./server/ -v
+    - go test ./todo/tests ./postgre/ ./server/ -v
 
 package:
   stage: package

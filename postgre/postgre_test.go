@@ -8,7 +8,7 @@ import (
 
 func TestCreateNewPostgreDbConnectionRunsSuccessfully(t *testing.T) {
 	// change here to CI != "" after add it to pipeline.
-	if os.Getenv("CI") == "" {
+	if os.Getenv("CI") != "" {
 		t.Skip()
 	}
 	db, err := NewPostgreDB(DefaultConfig)
