@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-backend
+  namespace: argocd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: todo-app
+  project: default
+  source:
+    repoURL: git@gitlab.com:ahmet.zumberoglu/todo-deployment-artifacts.git
+    path: todo-backend/test
+    targetRevision: main
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
