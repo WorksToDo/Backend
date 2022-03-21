@@ -1,15 +1,15 @@
 #variables:
 #  DOCKER_HOST: tcp://docker:2375/
 #
-#stages:
+stages:
 #  - build
 #  - test
 #  - package
 ##  - prepare test artifacts
 #  - deploy-to-test-environment
 #  - pact test
-#  - acceptance test
 #  - prepare prod artifacts
+  - pact-provider-verify
 #  - deploy to prod
 #build:
 #  stage: build
@@ -108,7 +108,14 @@
 #    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
 #    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
 #    - git push $DEPLOYMENT_ARTIFACTS_REPO
-
+pact-provider-verify:
+  stage: pact-provider-verify
+  image:
+    name: golang:1.17
+  before_script:
+    - go mod tidy -go=1.16 && go mod tidy -go=1.17
+  script:
+    - go test ./cdc/ -v
 #deploy-to-prod-env:
 #  stage: deploy-to-prod-env
 #  image: eneskzlcn/doctl-kubectl-argocd:latest
