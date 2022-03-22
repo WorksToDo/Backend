@@ -1,90 +1,92 @@
-#variables:
-#  DOCKER_HOST: tcp://docker:2375/
-#
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+
 stages:
-#  - build
-#  - test
-#  - package
-##  - prepare test artifacts
-#  - deploy-to-test-environment
-#  - pact test
-#  - prepare prod artifacts
+  - build
+  - test
+  - package
+  - prepare-test-artifacts
+  - deploy-to-test-env
   - pact-provider-verify
+  - prepare-test-artifacts
+#  - prepare prod artifacts
 #  - deploy to prod
-#build:
-#  stage: build
-#  image: golang:1.17.0-alpine3.14
-#  before_script:
-#    - go mod tidy -go=1.16 && go mod tidy -go=1.17
-#  script:
-#    - go build -o bin/main main.go
-#
-#test:
-#  stage: test
-#  image: golang:1.17
-#  variables:
-#    CI : $CI
-#  before_script:
-#    - go mod tidy -go=1.16 && go mod tidy -go=1.17
-#  script:
-#    - go test ./todo/tests ./postgre/ ./server/ -v
-#
-#package:
-#  stage: package
-#  image: docker:18-git
-#  services:
-#    - name: docker:18-dind
-#  variables:
-#    DOCKER_REGISTRY_NAME: $MY_CI_REGISTRY_NAME:$CI_PIPELINE_ID
-#  script:
-#    - docker login -u $MY_CI_DOCKER_USER --password $MY_CI_DOCKER_PASS
-#    - docker build -t $DOCKER_REGISTRY_NAME $CI_PROJECT_DIR
-#    - docker push $DOCKER_REGISTRY_NAME
-#
-#prepare-test-artifacts:
-#  stage: prepare-test-artifacts
-#  image:
-#    name: eneskzlcn/helm-chart:2.0.0
-#    entrypoint: [""]
-#  variables:
-#    DEPLOYMENT_ENVIRONMENT: test
-#    HELM_CHART_REPO: https://${MY_CI_USERNAME}:${HELM_CHART_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-helm.git
-#    DEPLOYMENT_ARTIFACTS_REPO: https://${MY_CI_USERNAME}:${DEPLOYMENT_ARTIFACTS_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-deployment-artifacts.git
-#    HELM_APP_NAME: todo-backend
-#  before_script:
-#    - git clone $HELM_CHART_REPO && cd todo-helm
-#    - mkdir -p rendered-templates
-#    - helm template $HELM_APP_NAME --set frontend.image.tag=${CI_PIPELINE_ID} --dry-run --output-dir ../rendered-templates
-#    - cat ../rendered-templates/${HELM_APP_NAME}/templates/${HELM_APP_NAME}-deployment.yml && cd ..
-#  script:
-#    - git clone $DEPLOYMENT_ARTIFACTS_REPO
-#    - cd todo-deployment-artifacts && git checkout -B main
-#    - git config --global user.email = "ci-cd@pipeline.com" && git config --global user.name = "CI CD Pipeline" && cd ..
-#    - rm -r todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/*
-#    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
-#    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
-#    - git push $DEPLOYMENT_ARTIFACTS_REPO
+build:
+  stage: build
+  image: golang:1.17.0-alpine3.14
+  before_script:
+    - go mod tidy -go=1.16 && go mod tidy -go=1.17
+  script:
+    - go build -o bin/main main.go
 
-#deploy-to-test-env:
-#  stage: deploy-to-test-env
-#  image: eneskzlcn/doctl-kubectl-argocd:latest
-#  variables:
-#    ARGO_CD_APP_NAME: todo-backend
-#    ARGO_CD_SERVER: ${ARGO_CD_SERVER}
-#    ARGOCD_USERNAME: ${ARGO_CD_USER}
-#    ARGOCD_PASSWORD: ${ARGO_CD_PASSWORD}
-#    CLUSTER_ID: ${TEST_CLUSTER_ID}
-#    DEPLOYMENT_ENVIRONMENT: test
-#  before_script:
-#    - doctl auth init -t $DO_TOKEN
-#    - doctl kubernetes cluster kubeconfig save $CLUSTER_ID
-#    - kubectl apply -f $CI_PROJECT_DIR/.cd/argocd/argocd-secret.yml
-#    - kubectl apply -f $CI_PROJECT_DIR/.cd/argocd/${DEPLOYMENT_ENVIRONMENT}/argocd.yml
-#  script:
-#    - argocd login $ARGO_CD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
-#    - argocd app sync $ARGO_CD_APP_NAME
+test:
+  stage: test
+  image: golang:1.17
+  variables:
+    CI : $CI
+  before_script:
+    - go mod tidy -go=1.16 && go mod tidy -go=1.17
+  script:
+    - go test ./todo/tests ./postgre/ ./server/ -v
 
+package:
+  stage: package
+  image: docker:18-git
+  services:
+    - name: docker:18-dind
+  variables:
+    DOCKER_REGISTRY_NAME: $MY_CI_REGISTRY_NAME:$CI_PIPELINE_ID
+  script:
+    - docker login -u $MY_CI_DOCKER_USER --password $MY_CI_DOCKER_PASS
+    - docker build -t $DOCKER_REGISTRY_NAME $CI_PROJECT_DIR
+    - docker push $DOCKER_REGISTRY_NAME
 
+prepare-test-artifacts:
+  stage: prepare-test-artifacts
+  image:
+    name: eneskzlcn/helm-chart:2.0.0
+    entrypoint: [""]
+  variables:
+    DEPLOYMENT_ENVIRONMENT: test
+    HELM_CHART_REPO: https://${MY_CI_USERNAME}:${HELM_CHART_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-helm.git
+    DEPLOYMENT_ARTIFACTS_REPO: https://${MY_CI_USERNAME}:${DEPLOYMENT_ARTIFACTS_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-deployment-artifacts.git
+    HELM_APP_NAME: todo-backend
+  before_script:
+    - git clone $HELM_CHART_REPO && cd todo-helm
+    - mkdir -p rendered-templates
+    - helm template $HELM_APP_NAME --set frontend.image.tag=${CI_PIPELINE_ID} --dry-run --output-dir ../rendered-templates
+    - cat ../rendered-templates/${HELM_APP_NAME}/templates/${HELM_APP_NAME}-deployment.yml && cd ..
+  script:
+    - git clone $DEPLOYMENT_ARTIFACTS_REPO
+    - cd todo-deployment-artifacts && git checkout -B main
+    - git config --global user.email = "ci-cd@pipeline.com" && git config --global user.name = "CI CD Pipeline" && cd ..
+    - rm -r todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/*
+    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
+    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
+    - git push $DEPLOYMENT_ARTIFACTS_REPO
+
+deploy-to-test-env:
+  stage: deploy-to-test-env
+  image: eneskzlcn/gcloud-argocd-cli:latest
+  variables:
+    ARGO_CD_APP_NAME: todo-backend
+    ARGO_CD_SERVER: $ARGO_CD_SERVER
+    ARGOCD_USERNAME: $ARGO_CD_USER
+    ARGOCD_PASSWORD: $ARGO_CD_PASSWORD
+    DEPLOYMENT_ENVIRONMENT: test
+    GKE_CLUSTER_NAME: test
+    GKE_PROJECT_ID: $GKE_TEST_PROJECT_ID
+    GKE_COMPUTE_ZONE: $GKE_TEST_CLUSTER_ZONE
+    ARGOCD_HEALTH_TIMEOUT: 50
+  before_script:
+    - echo $GCLOUD_KEY | base64 -d > ${CI_PROJECT_DIR}/gcloud-key.json
+    - gcloud auth activate-service-account --key-file ${CI_PROJECT_DIR}/gcloud-key.json
+    - gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GKE_COMPUTE_ZONE --project $GKE_PROJECT_ID
+    - kubectl apply -f $CI_PROJECT_DIR/.cd/argocd/argocd-secret.yml
+    - kubectl apply -f $CI_PROJECT_DIR/.cd/argocd/${DEPLOYMENT_ENVIRONMENT}/argocd.yml
+  script:
+    - argocd login $ARGO_CD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
+    - argocd app sync $ARGO_CD_APP_NAME && argocd app wait $ARGOCD_APP_NAME -l argocd.argoproj.io/instance=$ARGOCD_APP_NAME --health --timeout $ARGOCD_HEALTH_TIMEOUT
 #prepare-prod-artifacts:
 #  stage: prepare-prod-artifacts
 #  image:
@@ -108,14 +110,14 @@ stages:
 #    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
 #    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
 #    - git push $DEPLOYMENT_ARTIFACTS_REPO
-pact-provider-verify:
-  stage: pact-provider-verify
-  image:
-    name: golang:1.17
-  before_script:
-    - go mod tidy -go=1.16 && go mod tidy -go=1.17
-  script:
-    - go test ./cdc/ -v
+#pact-provider-verify:
+#  stage: pact-provider-verify
+#  image:
+#    name: eneskzlcn/pact-with-go:latest
+#  before_script:
+#    - go mod download
+#  script:
+#    - go test ./cdc/ -v
 #deploy-to-prod-env:
 #  stage: deploy-to-prod-env
 #  image: eneskzlcn/doctl-kubectl-argocd:latest
