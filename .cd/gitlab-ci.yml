@@ -8,8 +8,8 @@ stages:
   - prepare-test-artifacts
   - deploy-to-test-env
   - pact-provider-verify
-#  - prepare prod artifacts
-#  - deploy to prod
+  - prepare prod artifacts
+  - deploy to prod
 build:
   stage: build
   image: golang:1.17.0-alpine3.14
@@ -91,6 +91,8 @@ pact-provider-verify:
   stage: pact-provider-verify
   image:
     name: eneskzlcn/pact-with-go:latest
+  before_script:
+    - go mod tidy -go=1.16 && go mod tidy -go=1.17
   script:
     - go test ./cdc/ -v
 #prepare-prod-artifacts::
