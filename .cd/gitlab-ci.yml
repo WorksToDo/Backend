@@ -8,7 +8,6 @@ stages:
   - prepare-test-artifacts
   - deploy-to-test-env
   - pact-provider-verify
-  - prepare-test-artifacts
 #  - prepare prod artifacts
 #  - deploy to prod
 build:
@@ -87,7 +86,14 @@ deploy-to-test-env:
   script:
     - argocd login $ARGO_CD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
     - argocd app sync $ARGO_CD_APP_NAME && argocd app wait $ARGOCD_APP_NAME -l argocd.argoproj.io/instance=$ARGOCD_APP_NAME --health --timeout $ARGOCD_HEALTH_TIMEOUT
-#prepare-prod-artifacts:
+
+pact-provider-verify:
+  stage: pact-provider-verify
+  image:
+    name: eneskzlcn/pact-with-go:latest
+  script:
+    - go test ./cdc/ -v
+#prepare-prod-artifacts::
 #  stage: prepare-prod-artifacts
 #  image:
 #    name: eneskzlcn/helm-chart:2.0.0
@@ -110,14 +116,6 @@ deploy-to-test-env:
 #    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
 #    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
 #    - git push $DEPLOYMENT_ARTIFACTS_REPO
-#pact-provider-verify:
-#  stage: pact-provider-verify
-#  image:
-#    name: eneskzlcn/pact-with-go:latest
-#  before_script:
-#    - go mod download
-#  script:
-#    - go test ./cdc/ -v
 #deploy-to-prod-env:
 #  stage: deploy-to-prod-env
 #  image: eneskzlcn/doctl-kubectl-argocd:latest
