@@ -9,7 +9,7 @@ stages:
   - deploy-to-test-env
   - pact-provider-verify
   - prepare-prod-artifacts
-  - deploy-to-prod
+  - deploy-to-prod-env
 
 build:
   stage: build
@@ -48,21 +48,21 @@ prepare-test-artifacts:
     entrypoint: [""]
   variables:
     DEPLOYMENT_ENVIRONMENT: test
-    HELM_CHART_REPO: https://${MY_CI_USERNAME}:${HELM_CHART_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-helm.git
-    DEPLOYMENT_ARTIFACTS_REPO: https://${MY_CI_USERNAME}:${DEPLOYMENT_ARTIFACTS_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-deployment-artifacts.git
+    HELM_CHART_REPO: https://${MY_CI_USERNAME}:${HELM_CHART_TOKEN}@gitlab.com/todo32/helm.git
+    DEPLOYMENT_ARTIFACTS_REPO: https://${MY_CI_USERNAME}:${DEPLOYMENT_ARTIFACTS_TOKEN}@gitlab.com/todo32/deployment-artifacts.git
     HELM_APP_NAME: todo-backend
   before_script:
-    - git clone $HELM_CHART_REPO && cd todo-helm
+    - git clone $HELM_CHART_REPO && cd helm
     - mkdir -p rendered-templates
     - helm template $HELM_APP_NAME --set api.image.tag=${CI_PIPELINE_ID} --set deployEnv=${DEPLOYMENT_ENVIRONMENT} --dry-run --output-dir ../rendered-templates
     - cat ../rendered-templates/${HELM_APP_NAME}/templates/${HELM_APP_NAME}-deployment.yml && cd ..
   script:
     - git clone $DEPLOYMENT_ARTIFACTS_REPO
-    - cd todo-deployment-artifacts && git checkout -B main
+    - cd deployment-artifacts && git checkout -B main
     - git config --global user.email = "ci-cd@pipeline.com" && git config --global user.name = "CI CD Pipeline" && cd ..
-    - rm -r todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/*
-    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
-    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
+    - rm -r deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/*
+    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
+    - cd deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
     - git push $DEPLOYMENT_ARTIFACTS_REPO
 
 deploy-to-test-env:
@@ -104,21 +104,21 @@ prepare-prod-artifacts:
     entrypoint: [""]
   variables:
     DEPLOYMENT_ENVIRONMENT: prod
-    HELM_CHART_REPO: https://${MY_CI_USERNAME}:${HELM_CHART_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-helm.git
-    DEPLOYMENT_ARTIFACTS_REPO: https://${MY_CI_USERNAME}:${DEPLOYMENT_ARTIFACTS_TOKEN}@gitlab.com/ahmet.zumberoglu/todo-deployment-artifacts.git
+    HELM_CHART_REPO: https://${MY_CI_USERNAME}:${HELM_CHART_TOKEN}@gitlab.com/todo32/helm.git
+    DEPLOYMENT_ARTIFACTS_REPO: https://${MY_CI_USERNAME}:${DEPLOYMENT_ARTIFACTS_TOKEN}@gitlab.com/todo32/deployment-artifacts.git
     HELM_APP_NAME: todo-backend
   before_script:
-    - git clone $HELM_CHART_REPO && cd todo-helm
+    - git clone $HELM_CHART_REPO && cd helm
     - mkdir -p rendered-templates
     - helm template $HELM_APP_NAME --set api.image.tag=${CI_PIPELINE_ID} --set deployEnv=${DEPLOYMENT_ENVIRONMENT} --dry-run --output-dir ../rendered-templates
     - cat ../rendered-templates/${HELM_APP_NAME}/templates/${HELM_APP_NAME}-deployment.yml && cd ..
   script:
     - git clone $DEPLOYMENT_ARTIFACTS_REPO
-    - cd todo-deployment-artifacts && git checkout -B main
+    - cd deployment-artifacts && git checkout -B main
     - git config --global user.email = "ci-cd@pipeline.com" && git config --global user.name = "CI CD Pipeline" && cd ..
-    - rm -r todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/*
-    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* todo-deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
-    - cd todo-deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
+    - rm -r deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/*
+    - cp -r rendered-templates/${HELM_APP_NAME}/templates/* deployment-artifacts/${HELM_APP_NAME}/${DEPLOYMENT_ENVIRONMENT}/
+    - cd deployment-artifacts && git add . -A && git commit -m "CI CD operation for env $DEPLOYMENT_ENVIRONMENT with pipeline id ${CI_PIPELINE_ID}"
     - git push $DEPLOYMENT_ARTIFACTS_REPO
 
 deploy-to-prod-env:
