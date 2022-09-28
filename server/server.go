@@ -12,10 +12,7 @@ import (
 	"todo-backend/todo"
 )
 
-// Server config.Server --> New funct.
-// Server structı
-// Server New lerken []IHandler arrayi alıp hepsini bu api a register etmemiz lazım, middle ware cors eklemek laızm.
-//chiü
+
 type Server struct {
 	app *fiber.App
 	config config.Server
